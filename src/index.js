@@ -1,1 +1,1 @@
-module.exports = require('./mongo-registry.js');
+module.exports = require('./messager.js');
