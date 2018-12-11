@@ -7,7 +7,7 @@
     "dist"
   ],
   "scripts": {
-    "test": "cross-env NODE_ENV=test mocha --recursive --require babel-register --exit \"test/**.js\"",
+    "test": "cross-env NODE_ENV=test mocha --recursive --require @babel/register --exit \"test/**.js\"",
     "build": "rimraf dist && yarn run test && babel src -d dist",
     "prepublishOnly": "npm version patch && npm run build",
     "npmpublish": "npm publish"
@@ -19,39 +19,16 @@
     "lodash": "4.17.5"
   },
   "devDependencies": {
-    "babel-cli": "6.26.0",
-    "babel-plugin-transform-builtin-extend": "1.1.2",
-    "babel-plugin-transform-runtime": "6.23.0",
-    "babel-polyfill": "6.26.0",
-    "babel-preset-env": "1.6.1",
-    "babel-preset-stage-3": "6.24.1",
+    "@babel/cli": "7.2.0",
+    "@babel/core": "7.2.0",
+    "@babel/node": "7.2.0",
+    "@babel/plugin-transform-runtime": "7.2.0",
+    "@babel/preset-env": "7.2.0",
+    "@babel/runtime": "7.2.0",
     "chai": "4.1.2",
     "cross-env": "5.2.0",
     "mocha": "5.0.3",
-    "rimraf": "2.6.2",
-    "yarn": "1.7.0"
-  },
-  "babel": {
-    "presets": [
-      "env",
-      "stage-3"
-    ],
-    "plugins": [
-      "transform-runtime",
-      [
-        "transform-builtin-extend",
-        {
-          "globals": [
-            "Error",
-            "Array"
-          ]
-        }
-      ]
-    ],
-    "env": {
-      "test": {
-        "plugins": []
-      }
-    }
+    "nodemon": "1.18.8",
+    "rimraf": "2.6.2"
   }
 }

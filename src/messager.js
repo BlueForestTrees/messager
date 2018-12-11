@@ -1,19 +1,13 @@
-import rbmq from 'amqplib/callback_api'
+import rbmq from 'amqplib'
 
-const debug = require('debug')('api:mongo-registry')
+const debug = require('debug')('api:messager')
 
-let conn = null
-
-const mqInit = ENV => new Promise((resolve, reject) => {
+export const mqInit = ENV => {
     debug("CONNECTING TO %o", ENV.RABBIT_HOST)
-    rbmq.connect(ENV.RABBIT_HOST, function (err, conn) {
-        if (err) {
-            reject(err)
-        } else {
-            conn = c
+    return rbmq.connect(ENV.RABBIT_HOST)
+        .then(conn => {
             debug("CONNECTED")
-            resolve(conn)
-        }
-    })
+            return conn
+        })
+}
 
-})
