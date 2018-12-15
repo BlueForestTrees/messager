@@ -18,12 +18,12 @@ describe('connect then insert', async function () {
 
 
             ch.assertExchange(tc, 'fanout', {durable: false})
-            return ch.assertQueue('', {exclusive: true})
+            const queued = ch.assertQueue('', {exclusive: true})
                 .then(q => {
                     console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q.queue)
                     ch.bindQueue(q.queue, tc, '')
 
-                    return ch.consume(
+                    const consumed = ch.consume(
                         q.queue,
                         msg => {
                             if (msg.content) {
@@ -32,7 +32,9 @@ describe('connect then insert', async function () {
                         },
                         {noAck: true}
                     )
+                    return consumed
                 })
+            return queued
         })
     }))
 
