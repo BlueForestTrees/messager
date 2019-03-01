@@ -1,0 +1,8 @@
+{
+  "name": "trunk-creators",
+  "options": {
+    "exclusive": false,
+    "durable": false,
+    "autoDelete": false
+  }
+}

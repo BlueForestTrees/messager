@@ -1,30 +1,29 @@
 #!/usr/bin/env node
-
-import amqp from 'amqplib'
+import ENV from "./env"
+import closer from "./closer"
+import {createSender} from "./rabbit"
+import every from "./every"
 
 let idx = 0
-const ex = 'BF-EXCHANGE'
+const pickMessage = () => ({
+    _id: idx,
+    message: `Hello World #${idx++}`
+})
 
-amqp.connect('amqp://localhost')
-    .then(conn => {
-        conn.createChannel().then(
-            ch => {
-                ch.assertExchange(ex, 'direct', {durable: false})
-                every(10, () => send(ch))
+closer(process.exit)
+
+createSender(ENV.ROUTING_KEY)
+    .then(send => {
+        every(100, () => {
+            const msg = pickMessage()
+            try {
+                send(msg)
+                console.log(msg)
+            } catch (e) {
+                console.error("erreur d'envoi", e.message)
             }
-        )
+        }).then(stopper => {
+            closer(stopper)
+        }).catch(console.error)
     })
 
-const send = ch => {
-    const msg = 'Hello World #' + (idx++)
-    ch.publish(ex, Math.random() > 0.5 ? 'left' : 'right', new Buffer(msg))
-    console.log(" [x] Sent %s", msg)
-}
-
-const every = (delay, command) => {
-    const call = () => {
-        command()
-        setTimeout(call, delay)
-    }
-    call()
-}

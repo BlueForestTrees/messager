@@ -1,1 +1,1 @@
-module.exports = require('./messager.js');
+module.exports = require('./rabbit.js');
