@@ -15,5 +15,5 @@ rabbit.initRabbit(ENV.RB)
 
 
 var receiveMsg = function (msg) {
-    console.log("%s RECEIVED: %s", new Date(), JSON.stringify(msg))
+    console.log(msg)
 }
