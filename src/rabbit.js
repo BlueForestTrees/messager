@@ -43,11 +43,18 @@ var sender = function (exConf, routingKey) {
     return function (ch) {
         debug("SENDER @%s", routingKey)
         return function (msg) {
+            let msgString = null
             try {
-                ch.publish(exConf.key, routingKey, new Buffer(JSON.stringify(msg)))
-                return 0
+                msgString = JSON.stringify(msg)
             } catch (e) {
-                console.error("send error")
+                console.error("can't stringify message", msg)
+                throw e
+            }
+            try {
+                ch.publish(exConf.key, routingKey, new Buffer(msgString))
+                return 1
+            } catch (e) {
+                console.error("send error", e)
                 throw e
             }
         }
@@ -71,7 +78,6 @@ var receiver = function (work) {
                 }
                 try {
                     var result = work(json)
-                    ctx.ch.ack(msg)
                     if (result && result.then) {
                         result
                             .then(function () {
@@ -80,6 +86,8 @@ var receiver = function (work) {
                             .catch(function (e) {
                                 console.error("WORK exception", e)
                             })
+                    } else {
+                        ctx.ch.ack(msg)
                     }
                 } catch (e) {
                     console.error("WORK exception", e)
