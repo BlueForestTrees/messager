@@ -1,43 +1,43 @@
 import rbmq from 'amqplib'
-import ENV from "./env"
 
 const debug = require('debug')('api:messager')
 
+let ch
 
-const connect = async () => {
-    debug("CONNECT %s", ENV.RB.url)
+const connect = async ({url}) => {
+    debug("CONNECT %s", url)
     try {
-        return await rbmq.connect(ENV.RB.url)
+        return await rbmq.connect(url)
     } catch (e) {
         console.warn("connection problem. Retry in 1s")
-        return connect()
+        return connect({url})
     }
 }
 
 const channel = c => {
     debug("CHANNEL")
-    return c.createChannel()
+    return ch = c.createChannel()
 }
 
-const exchange = ch => {
-    debug("EXCHANGE %s", ENV.RB.exchange.key)
-    return ch.assertExchange(ENV.RB.exchange.key, ENV.RB.exchange.type, ENV.RB.exchange.options).then(() => ch)
+const exchange = exConf => ch => {
+    debug("EXCHANGE %s", exConf.key)
+    return ch.assertExchange(exConf.key, exConf.type, exConf.options).then(() => ch)
 }
 
-const queue = (routingKey, qConf) => ch => {
+const queue = (exConf, routingKey, qConf) => ch => {
     debug("QUEUE %s, routingKey %s", qConf.name, routingKey)
     return ch.assertQueue(qConf.name, qConf.options)
-        .then(q => ch.bindQueue(q.queue, ENV.RB.exchange.key, routingKey))
+        .then(q => ch.bindQueue(q.queue, exConf.key, routingKey))
         .then(q => ({ch, q}))
 }
 
-const sender = routingKey => ch => {
+const sender = (exConf, routingKey) => ch => {
     debug("SENDER @%s")
     return msg => {
         try {
-            ch.publish(ENV.RB.exchange.key, routingKey, new Buffer(JSON.stringify(msg)))
+            ch.publish(exConf.key, routingKey, new Buffer(JSON.stringify(msg)))
         } catch (e) {
-            console.error("erreur d'envoi")
+            console.error("send error")
             throw e
         }
     }
@@ -69,24 +69,23 @@ const receiver = work => ({ch, q}) => {
 }
 
 const log = o => {
-    debug("démarré")
+    debug("started")
     return o
 }
 
-const rabbit = () =>
-    connect()
-        .then(channel)
-        .then(exchange)
+const initRabbit = rb => connect(rb).then(channel)
 
-const createSender = routingKey =>
-    rabbit()
-        .then(sender(routingKey))
+const createSender = (exConf, routingKey) =>
+    ch
+        .then(exchange(exConf))
+        .then(sender(exConf, routingKey))
         .then(log)
 
-const createReceiver = (routingKey, qConf, work) =>
-    rabbit()
-        .then(queue(routingKey, qConf))
+const createReceiver = (exConf, routingKey, qConf, work) =>
+    ch
+        .then(exchange(exConf))
+        .then(queue(exConf, routingKey, qConf))
         .then(receiver(work))
         .then(log)
 
-export {createSender, createReceiver}
+export {initRabbit, createSender, createReceiver}
