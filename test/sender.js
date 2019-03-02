@@ -9,7 +9,9 @@ closer(function () {
 })
 
 rabbit.initRabbit(ENV.RB)
-    .then(rabbit.createSender(ENV.RB.exchange, ENV.ROUTING_KEY))
+    .then(function(){
+        return rabbit.createSender(ENV.RB.exchange, ENV.ROUTING_KEY)
+    })
     .then(sendMsgs)
 
 

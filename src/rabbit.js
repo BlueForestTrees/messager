@@ -99,11 +99,9 @@ var initRabbit = function (rb) {
 }
 
 var createSender = function (exConf, routingKey) {
-    return function () {
-        return ch.then(exchange(exConf))
-            .then(sender(exConf, routingKey))
-            .then(log)
-    }
+    return ch.then(exchange(exConf))
+        .then(sender(exConf, routingKey))
+        .then(log)
 }
 
 var createReceiver = function (exConf, routingKey, qConf, work) {
