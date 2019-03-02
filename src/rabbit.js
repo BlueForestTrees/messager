@@ -45,6 +45,7 @@ var sender = function (exConf, routingKey) {
         return function (msg) {
             try {
                 ch.publish(exConf.key, routingKey, new Buffer(JSON.stringify(msg)))
+                return 0
             } catch (e) {
                 console.error("send error")
                 throw e
