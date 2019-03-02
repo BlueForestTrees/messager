@@ -8,8 +8,7 @@
   ],
   "scripts": {
     "test": "cross-env NODE_ENV=test mocha --recursive --require @babel/register --exit \"test/**.js\"",
-    "build": "rimraf dist && yarn run test && babel src -d dist",
-    "prepublishOnly": "npm version patch && npm run build",
+    "prepublishOnly": "npm version patch",
     "npmpublish": "npm publish"
   },
   "author": "",
