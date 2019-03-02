@@ -41,7 +41,7 @@ var queue = function (exConf, routingKey, qConf) {
 
 var sender = function (exConf, routingKey) {
     return function (ch) {
-        debug("SENDER @%s")
+        debug("SENDER @%s", routingKey)
         return function (msg) {
             try {
                 ch.publish(exConf.key, routingKey, new Buffer(JSON.stringify(msg)))
@@ -99,10 +99,11 @@ var initRabbit = function (rb) {
 }
 
 var createSender = function (exConf, routingKey) {
-    return ch
-        .then(exchange(exConf))
-        .then(sender(exConf, routingKey))
-        .then(log)
+    return function () {
+        return ch.then(exchange(exConf))
+            .then(sender(exConf, routingKey))
+            .then(log)
+    }
 }
 
 var createReceiver = function (exConf, routingKey, qConf, work) {
