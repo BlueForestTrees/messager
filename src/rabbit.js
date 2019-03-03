@@ -3,6 +3,8 @@ var debug = require('debug')('api:messager')
 var ch //channel handle
 var BSON = require('bson')
 
+var bson = new BSON()
+
 var connect = function (conf) {
     debug("CONNECT %s", conf.url)
     return rbmq.connect(conf.url)
@@ -46,7 +48,7 @@ var sender = function (exConf, routingKey) {
         return function (msg) {
             let msgBson = null
             try {
-                msgBson = BSON.serialize(msg)
+                msgBson = bson.serialize(msg)
             } catch (e) {
                 console.error("can't bsony message", msg)
                 throw e
@@ -68,7 +70,7 @@ var receiver = function (work) {
         return ctx.ch.consume(
             ctx.q.queue,
             function (msg) {
-                let json = BSON.deserialize(msg.content)
+                let json = bson.deserialize(msg.content)
                 try {
                     var result = work(json)
                     if (result && result.then) {

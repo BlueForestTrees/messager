@@ -2,7 +2,8 @@
 var ENV = require("./env")
 var closer = require("node-closer")
 var rabbit = require("../src/index")
-const {createObjectId} = require("mongo-registry")
+
+var BSON = require('bson')
 
 closer(function () {
     console.log("graceful shutdown")
@@ -15,16 +16,22 @@ rabbit.initRabbit(ENV.RB)
     })
     .then(sendMsgs)
 
+//BSON.createFromHexString()
 
 function sendMsgs(send) {
     let i = 0
     var doSend = function () {
-        const msg = {_id: createObjectId(), number: i, string: `Hello World #${i}`, date: new Date()}
+        const msg = {
+            fromSender: BSON.ObjectId(),
+            number: i,
+            string: `Hello World #${i}`,
+            date: new Date()
+        }
         send(msg)
         console.log(msg)
         i++
     }
-    closer(every(100, doSend))
+    closer(every(1000, doSend))
 }
 
 function every(delay, work) {
