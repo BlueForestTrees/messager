@@ -7,7 +7,7 @@ var bson = new BSON()
 
 
 var connect = function (conf) {
-    debug("CONNECT %s", conf.url)
+    debug("connecting to %s", conf.url)
     return rbmq.connect(conf.url)
         .catch(function (e) {
             console.warn("connection problem. Retry in 1s")
@@ -16,13 +16,13 @@ var connect = function (conf) {
 }
 
 var channel = function (c) {
-    debug("CHANNEL")
+    debug("connection ok. creating channel")
     return ch = c.createChannel()
 }
 
 var exchange = function (exConf) {
     return function (ch) {
-        debug("EXCHANGE %s", exConf.key)
+        debug("asserting exchange %s", exConf.key)
         return ch.assertExchange(exConf.key, exConf.type, exConf.options)
             .then(function () {
                 return ch
@@ -32,7 +32,7 @@ var exchange = function (exConf) {
 
 var queue = function (exConf, routingKey, qConf) {
     return function (ch) {
-        debug("QUEUE %s, routingKey %s", qConf.name, routingKey)
+        debug("asserting queue %s from routingKey %s", qConf.name, routingKey)
         return ch.assertQueue(qConf.name, qConf.options)
             .then(function (q) {
                 return ch.bindQueue(q.queue, exConf.key, routingKey)
@@ -45,7 +45,7 @@ var queue = function (exConf, routingKey, qConf) {
 
 var sender = function (exConf, routingKey) {
     return function (ch) {
-        debug("SENDER @%s", routingKey)
+        debug("preparing a sender publishing on routingKey @%s", routingKey)
         return function (msg) {
             let msgBson = null
             try {
@@ -65,9 +65,9 @@ var sender = function (exConf, routingKey) {
     }
 }
 
-var receiver = function (work) {
+var receiver = function (work, routingKey, qConf) {
     return function (ctx) {
-        debug("RECEIVER")
+        debug("preparing a receiver on queue %s from routingKey %s", qConf.name, routingKey)
         return ctx.ch.consume(
             ctx.q.queue,
             function (msg) {
@@ -94,11 +94,6 @@ var receiver = function (work) {
     }
 }
 
-var log = function (o) {
-    debug("started")
-    return o
-}
-
 var initRabbit = function (rb) {
     return connect(rb).then(channel)
 }
@@ -106,15 +101,13 @@ var initRabbit = function (rb) {
 var createSender = function (exConf, routingKey) {
     return ch.then(exchange(exConf))
         .then(sender(exConf, routingKey))
-        .then(log)
 }
 
 var createReceiver = function (exConf, routingKey, qConf, work) {
     return ch
         .then(exchange(exConf))
         .then(queue(exConf, routingKey, qConf))
-        .then(receiver(work))
-        .then(log)
+        .then(receiver(work, routingKey, qConf))
 }
 
 module.exports = {initRabbit, createSender, createReceiver}

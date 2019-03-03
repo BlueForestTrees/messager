@@ -27,6 +27,9 @@ function sendMsgs(send) {
             string: `Hello #${i}`
         }
         send(msg)
+
+        console.log("sent:",msg)
+
         i++
     }
     closer(every(1000, doSend))
