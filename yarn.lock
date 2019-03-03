@@ -528,11 +528,6 @@ for-in@^1.0.2:
   resolved "https://registry.yarnpkg.com/for-in/-/for-in-1.0.2.tgz#81068d295a8142ec0ac726c6e2200c30fb6d5e80"
   integrity sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=
 
-fraction.js@4.0.4:
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.0.4.tgz#04e567110718adf7b52974a10434ab4c67a5183e"
-  integrity sha512-aK/oGatyYLTtXRHjfEsytX5fieeR5H4s8sLorzcT12taFS+dbMZejnvm9gRa8mZAPwci24ucjq9epDyaq5u8Iw==
-
 fragment-cache@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/fragment-cache/-/fragment-cache-0.2.1.tgz#4290fad27f13e89be7f33799c6bc5a0abfff0d19"
@@ -951,11 +946,6 @@ lodash.debounce@^4.0.8:
   resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
   integrity sha1-gteb/zCmfEAF/9XiUVMArZyk168=
 
-lodash@4.17.5:
-  version "4.17.5"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
-  integrity sha512-svL3uiZf1RwhH+cWrfZn3A4+U58wbP0tGVTLQPbjplZxZ8ROD9VLuNgsRniTlLe7OlSqR79RUehXgpBW/s0IQw==
-
 lowercase-keys@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/lowercase-keys/-/lowercase-keys-1.0.1.tgz#6f9e30b47084d971a7c820ff15a6c5167b74c26f"
@@ -1068,20 +1058,18 @@ mocha@5.0.3:
     mkdirp "0.5.1"
     supports-color "4.4.0"
 
-mongo-registry@1.0.20:
-  version "1.0.20"
-  resolved "https://registry.yarnpkg.com/mongo-registry/-/mongo-registry-1.0.20.tgz#61afce7c1a640f0c4adc8e84af993f15340c624a"
-  integrity sha512-XbTEgIV2FaxbllWDpOYa0fi9LX/5g3h3hZSqaa+1rO9HJywfO3Gw8k/iOZ8ATW78NLwCvF1CpN6jxpUuKAn57g==
+mongo-registry@^1.0.21:
+  version "1.0.21"
+  resolved "https://registry.yarnpkg.com/mongo-registry/-/mongo-registry-1.0.21.tgz#18e68bd8c667b8f9d5f73a99214093bc36576091"
+  integrity sha512-tYL8uAc/o5Zxp0xTnpotKVONdFvAb0b+ZnagkvSSbieZrQCBwbs/U38XbI8lKBIZjCa/HJWnwK7coEQWET6/Cw==
   dependencies:
     compare-versions "3.3.0"
-    fraction.js "4.0.4"
-    lodash "4.17.5"
-    mongodb "3.1.4"
+    mongodb "3.1.13"
 
-mongodb-core@3.1.3:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.1.3.tgz#b036bce5290b383fe507238965bef748dd8adb75"
-  integrity sha512-dISiV3zHGJTwZpg0xDhi9zCqFGMhA5kDPByHlcaEp09NSKfzHJ7XQbqVrL7qhki1U9PZHsmRfbFzco+6b1h2wA==
+mongodb-core@3.1.11:
+  version "3.1.11"
+  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.1.11.tgz#b253038dbb4d7329f3d1c2ee5400bb0c9221fde5"
+  integrity sha512-rD2US2s5qk/ckbiiGFHeu+yKYDXdJ1G87F6CG3YdaZpzdOm5zpoAZd/EKbPmFO6cQZ+XVXBXBJ660sSI0gc6qg==
   dependencies:
     bson "^1.1.0"
     require_optional "^1.0.1"
@@ -1089,12 +1077,12 @@ mongodb-core@3.1.3:
   optionalDependencies:
     saslprep "^1.0.0"
 
-mongodb@3.1.4:
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.1.4.tgz#0ff07a7409a4edf05e71f9ff8df3633bd278ed53"
-  integrity sha512-BGUxo4a/p5KtZpOn6+z6iZXTHfDxKDvibHQap9uMJqQouwoszvTIO/QbVZkaSX3Spny0jtTEeHc0FwfpGbtEzA==
+mongodb@3.1.13:
+  version "3.1.13"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.1.13.tgz#f8cdcbb36ad7a08b570bd1271c8525753f75f9f4"
+  integrity sha512-sz2dhvBZQWf3LRNDhbd30KHVzdjZx9IKC0L+kSZ/gzYquCF5zPOgGqRz6sSCqYZtKP2ekB4nfLxhGtzGHnIKxA==
   dependencies:
-    mongodb-core "3.1.3"
+    mongodb-core "3.1.11"
     safe-buffer "^5.1.2"
 
 ms@2.0.0:

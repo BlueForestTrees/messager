@@ -8,6 +8,15 @@ var ENV = {
 
     NODE_ENV: process.env.NODE_ENV || null,
     VERSION: version,
+
+
+
+
+    DB_NAME: process.env.DB_NAME || "BlueForestTreesDB",
+    DB_HOST: process.env.DB_HOST || "localhost",
+    DB_PORT: process.env.DB_PORT || 27017,
+    DB_USER: process.env.DB_USER || "doudou",
+    DB_PWD: process.env.DB_PWD || "masta",
 }
 
 ENV.RB = JSON.parse(fs.readFileSync(ENV.RB_PATH, 'utf8'))

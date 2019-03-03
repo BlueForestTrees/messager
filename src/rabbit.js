@@ -1,9 +1,10 @@
 var rbmq = require('amqplib')
 var debug = require('debug')('api:messager')
 var ch //channel handle
-var BSON = require('bson')
 
+var BSON = require("bson")
 var bson = new BSON()
+
 
 var connect = function (conf) {
     debug("CONNECT %s", conf.url)

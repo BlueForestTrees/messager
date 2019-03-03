@@ -3,7 +3,8 @@ var ENV = require("./env")
 var closer = require("node-closer")
 var rabbit = require("../src/index")
 
-var BSON = require('bson')
+var BSON = require("bson")
+var bson = new BSON()
 
 closer(function () {
     console.log("graceful shutdown")
@@ -16,19 +17,16 @@ rabbit.initRabbit(ENV.RB)
     })
     .then(sendMsgs)
 
-//BSON.createFromHexString()
-
 function sendMsgs(send) {
     let i = 0
     var doSend = function () {
         const msg = {
-            fromSender: BSON.ObjectId(),
+            obj: BSON.ObjectID(),
+            date: new Date(),
             number: i,
-            string: `Hello World #${i}`,
-            date: new Date()
+            string: `Hello #${i}`
         }
         send(msg)
-        console.log(msg)
         i++
     }
     closer(every(1000, doSend))
