@@ -1,6 +1,6 @@
 {
   "name": "simple-rbmq",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Gère la communication rabbit mq.",
   "main": "src/index.js",
   "files": [
