@@ -2,7 +2,7 @@ var version = require('./../package.json').version
 var fs = require('fs')
 
 var ENV = {
-    ROUTING_KEY: "post-trunk",
+    ROUTING_KEY: "trunk-upsert",
     RB_PATH: process.env.RB_PATH || "mq.json",
     QUEUE_PATH: process.env.QUEUE_PATH || "queue.json",
 

@@ -47,20 +47,8 @@ var sender = function (exConf, routingKey) {
     return function (ch) {
         debug("preparing a sender publishing on routingKey @%s", routingKey)
         return function (msg) {
-            let msgBson = null
-            try {
-                msgBson = bson.serialize(msg)
-            } catch (e) {
-                console.error("can't bsony message", msg)
-                throw e
-            }
-            try {
-                ch.publish(exConf.key, routingKey, msgBson)
-                return 1
-            } catch (e) {
-                console.error("send error", e)
-                throw e
-            }
+            ch.publish(exConf.key, routingKey, bson.serialize(msg))
+            return 1
         }
     }
 }
@@ -71,7 +59,13 @@ var receiver = function (work, routingKey, qConf) {
         return ctx.ch.consume(
             ctx.q.queue,
             function (msg) {
-                let json = bson.deserialize(msg.content)
+                let json
+                try {
+                    json = bson.deserialize(msg.content)
+                } catch (e) {
+                    console.error(e)
+                    return
+                }
                 try {
                     var result = work(json)
                     if (result && result.then) {

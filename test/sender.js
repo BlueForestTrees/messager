@@ -21,7 +21,7 @@ function sendMsgs(send) {
     let i = 0
     var doSend = function () {
         const msg = {
-            obj: BSON.ObjectID(),
+            _id: BSON.ObjectID(),
             date: new Date(),
             number: i,
             string: `Hello #${i}`
