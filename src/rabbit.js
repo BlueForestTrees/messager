@@ -63,8 +63,7 @@ var receiver = function (work, routingKey, qConf) {
                 try {
                     json = bson.deserialize(msg.content)
                 } catch (e) {
-                    console.error(e)
-                    return
+                    console.error(e.message, msg)
                 }
                 try {
                     var result = work(json)
