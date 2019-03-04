@@ -9,9 +9,6 @@ var ENV = {
     NODE_ENV: process.env.NODE_ENV || null,
     VERSION: version,
 
-
-
-
     DB_NAME: process.env.DB_NAME || "BlueForestTreesDB",
     DB_HOST: process.env.DB_HOST || "localhost",
     DB_PORT: process.env.DB_PORT || 27017,

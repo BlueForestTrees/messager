@@ -1,6 +1,6 @@
 var rbmq = require('amqplib')
 var debug = require('debug')('api:messager')
-var ch //channel handle
+var _channel //channel handle
 
 var BSON = require("bson")
 var bson = new BSON()
@@ -17,7 +17,7 @@ var connect = function (conf) {
 
 var channel = function (c) {
     debug("connection ok. creating channel")
-    return ch = c.createChannel()
+    return _channel = c.createChannel()
 }
 
 var exchange = function (exConf) {
@@ -35,17 +35,17 @@ var queue = function (exConf, routingKey, qConf) {
         debug("asserting queue %s from routingKey %s", qConf.name, routingKey)
         return ch.assertQueue(qConf.name, qConf.options)
             .then(function (q) {
-                return ch.bindQueue(q.queue, exConf.key, routingKey)
+                ch.bindQueue(q.queue, exConf.key, routingKey)
             })
-            .then(function (q) {
-                return {ch: ch, q: q}
+            .then(function () {
+                return ch
             })
     }
 }
 
 var sender = function (exConf, routingKey) {
     return function (ch) {
-        debug("preparing a sender publishing on routingKey @%s", routingKey)
+        debug("preparing a sender publishing on routingKey %s", routingKey)
         return function (msg) {
             ch.publish(exConf.key, routingKey, bson.serialize(msg))
             return 1
@@ -54,17 +54,17 @@ var sender = function (exConf, routingKey) {
 }
 
 var receiver = function (work, routingKey, qConf) {
-    return function (ctx) {
+    return function (ch) {
         debug("preparing a receiver on queue %s from routingKey %s", qConf.name, routingKey)
-        return ctx.ch.consume(
-            ctx.q.queue,
+        return ch.consume(
+            qConf.name,
             function (msg) {
                 let json
                 try {
                     json = bson.deserialize(msg.content)
                 } catch (e) {
                     console.error(e.message, Buffer.from(msg.content).toString())
-                    ctx.ch.ack(msg)
+                    ch.ack(msg)
                     return
                 }
                 try {
@@ -72,13 +72,13 @@ var receiver = function (work, routingKey, qConf) {
                     if (result && result.then) {
                         result
                             .then(function () {
-                                ctx.ch.ack(msg)
+                                ch.ack(msg)
                             })
                             .catch(function (e) {
                                 console.error("WORK exception", e)
                             })
                     } else {
-                        ctx.ch.ack(msg)
+                        ch.ack(msg)
                     }
                 } catch (e) {
                     console.error("WORK exception", e)
@@ -94,12 +94,13 @@ var initRabbit = function (rb) {
 }
 
 var createSender = function (exConf, routingKey) {
-    return ch.then(exchange(exConf))
+    return _channel
+        .then(exchange(exConf))
         .then(sender(exConf, routingKey))
 }
 
 var createReceiver = function (exConf, routingKey, qConf, work) {
-    return ch
+    return _channel
         .then(exchange(exConf))
         .then(queue(exConf, routingKey, qConf))
         .then(receiver(work, routingKey, qConf))

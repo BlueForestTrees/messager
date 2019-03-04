@@ -10,10 +10,11 @@ closer(function () {
 
 rabbit.initRabbit(ENV.RB)
     .then(function () {
-        return rabbit.createReceiver(ENV.RB.exchange, ENV.ROUTING_KEY, ENV.QUEUE, receiveMsg)
+        return rabbit.createReceiver(
+            ENV.RB.exchange,
+            ENV.ROUTING_KEY,
+            {...ENV.QUEUE, name: "debug"},
+            function (msg) {
+                console.log(msg)
+            })
     })
-
-
-var receiveMsg = function (msg) {
-    console.log(msg)
-}
