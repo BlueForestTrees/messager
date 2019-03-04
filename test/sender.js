@@ -1,29 +1,52 @@
 #!/usr/bin/env node
-import ENV from "./env"
-import closer from "node-closer"
-import {createSender, initRabbit} from "../src/index"
-import every from "./every"
+var ENV = require("./env")
+var closer = require("node-closer")
+var rabbit = require("../src/index")
 
-closer(()=>{
+var BSON = require("bson")
+var bson = new BSON()
+
+closer(function () {
     console.log("graceful shutdown")
     process.exit()
 })
 
-const sendMsgs = send => {
-    let idx = 0
-    every(100, () => {
-        try {
-            const msg = {_id: idx, message: `Hello World #${idx++}`}
-            send(msg)
-            console.log(msg)
-        } catch (e) {
-            console.error("erreur d'envoi", e.message)
+rabbit.initRabbit(ENV.RB)
+    .then(function () {
+        return rabbit.createSender(ENV.RB.exchange, ENV.ROUTING_KEY)
+    })
+    .then(sendMsgs)
+
+function sendMsgs(send) {
+    let i = 0
+    var doSend = function () {
+        const msg = {
+            _id: BSON.ObjectID(),
+            date: new Date(),
+            number: i,
+            string: `Hello #${i}`
         }
-    }).then(stopper => {
-        closer(stopper)
-    }).catch(console.error)
+        send(msg)
+
+        console.log("sent:",msg)
+
+        i++
+    }
+    closer(every(1000, doSend))
 }
 
-initRabbit({url: ENV.RB.url})
-    .then(() => createSender(ENV.RB.exchange, ENV.ROUTING_KEY))
-    .then(sendMsgs)
+function every(delay, work) {
+    var stop = false
+    var call = function () {
+        work()
+        if (!stop) {
+            setTimeout(call, delay)
+        } else {
+            console.log("stop every.")
+        }
+    }
+    call()
+    return function () {
+        stop = true
+    }
+}

@@ -1,91 +1,109 @@
-import rbmq from 'amqplib'
+var rbmq = require('amqplib')
+var debug = require('debug')('api:messager')
+var _channel //channel handle
 
-const debug = require('debug')('api:messager')
+var BSON = require("bson")
+var bson = new BSON()
 
-let ch
 
-const connect = async ({url}) => {
-    debug("CONNECT %s", url)
-    try {
-        return await rbmq.connect(url)
-    } catch (e) {
-        console.warn("connection problem. Retry in 1s")
-        return connect({url})
+var connect = function (conf) {
+    debug("connecting to %s", conf.url)
+    return rbmq.connect(conf.url)
+        .catch(function (e) {
+            console.warn("connection problem. Retry in 1s")
+            return connect(conf)
+        })
+}
+
+var channel = function (c) {
+    debug("connection ok. creating channel")
+    return _channel = c.createChannel()
+}
+
+var exchange = function (exConf) {
+    return function (ch) {
+        debug("asserting exchange %s", exConf.key)
+        return ch.assertExchange(exConf.key, exConf.type, exConf.options)
+            .then(function () {
+                return ch
+            })
     }
 }
 
-const channel = c => {
-    debug("CHANNEL")
-    return ch = c.createChannel()
+var queue = function (exConf, routingKey, qConf) {
+    return function (ch) {
+        debug("asserting queue %s from routingKey %s", qConf.name, routingKey)
+        return ch.assertQueue(qConf.name, qConf.options)
+            .then(function (q) {
+                ch.bindQueue(q.queue, exConf.key, routingKey)
+            })
+            .then(function () {
+                return ch
+            })
+    }
 }
 
-const exchange = exConf => ch => {
-    debug("EXCHANGE %s", exConf.key)
-    return ch.assertExchange(exConf.key, exConf.type, exConf.options).then(() => ch)
-}
-
-const queue = (exConf, routingKey, qConf) => ch => {
-    debug("QUEUE %s, routingKey %s", qConf.name, routingKey)
-    return ch.assertQueue(qConf.name, qConf.options)
-        .then(q => ch.bindQueue(q.queue, exConf.key, routingKey))
-        .then(q => ({ch, q}))
-}
-
-const sender = (exConf, routingKey) => ch => {
-    debug("SENDER @%s")
-    return msg => {
-        try {
-            ch.publish(exConf.key, routingKey, new Buffer(JSON.stringify(msg)))
-        } catch (e) {
-            console.error("send error")
-            throw e
+var sender = function (exConf, routingKey) {
+    return function (ch) {
+        debug("preparing a sender publishing on routingKey %s", routingKey)
+        return function (msg) {
+            ch.publish(exConf.key, routingKey, bson.serialize(msg))
+            return 1
         }
     }
 }
 
-const receiver = work => ({ch, q}) => {
-    debug("RECEIVER")
-    return ch.consume(
-        q.queue,
-        async msg => {
-            const contentString = msg.content.toString()
-            let json
-            try {
-                json = JSON.parse(contentString)
-            } catch (e) {
-                console.error("not a json message!", contentString)
-                ch.ack(msg)
-                return
-            }
-            try {
-                await work(json)
-                ch.ack(msg)
-            } catch (e) {
-                console.error("WORK exception", e)
-            }
-        },
-        {noAck: false}
-    )
+var receiver = function (work, routingKey, qConf) {
+    return function (ch) {
+        debug("preparing a receiver on queue %s from routingKey %s", qConf.name, routingKey)
+        return ch.consume(
+            qConf.name,
+            function (msg) {
+                let json
+                try {
+                    json = bson.deserialize(msg.content)
+                } catch (e) {
+                    console.error(e.message, Buffer.from(msg.content).toString())
+                    ch.ack(msg)
+                    return
+                }
+                try {
+                    var result = work(json)
+                    if (result && result.then) {
+                        result
+                            .then(function () {
+                                ch.ack(msg)
+                            })
+                            .catch(function (e) {
+                                console.error("WORK exception", e)
+                            })
+                    } else {
+                        ch.ack(msg)
+                    }
+                } catch (e) {
+                    console.error("WORK exception", e)
+                }
+            },
+            {noAck: false}
+        )
+    }
 }
 
-const log = o => {
-    debug("started")
-    return o
+var initRabbit = function (rb) {
+    return connect(rb).then(channel)
 }
 
-const initRabbit = rb => connect(rb).then(channel)
-
-const createSender = (exConf, routingKey) =>
-    ch
+var createSender = function (exConf, routingKey) {
+    return _channel
         .then(exchange(exConf))
         .then(sender(exConf, routingKey))
-        .then(log)
+}
 
-const createReceiver = (exConf, routingKey, qConf, work) =>
-    ch
+var createReceiver = function (exConf, routingKey, qConf, work) {
+    return _channel
         .then(exchange(exConf))
         .then(queue(exConf, routingKey, qConf))
-        .then(receiver(work))
-        .then(log)
+        .then(receiver(work, routingKey, qConf))
+}
 
-export {initRabbit, createSender, createReceiver}
+module.exports = {initRabbit, createSender, createReceiver}
