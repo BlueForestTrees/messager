@@ -1,14 +1,43 @@
-# messager
+# Messager (simple-rbmq)
 
-messager permet de recevoir et envoyer des messages à rabbitMq.
+Messager ou simple-rbmq est une mini-librairie permettant de communiquer via amqp (rabbitMq) en utilisant une serialisation BSON.
 
-Attention, le format BSON est utilisé pour la communication.
+Cela permet d'envoyer des objets JSON/BSON en conservant les types (ObjectId, Date, etc.)
 
-Cela veut dire que les types sont respectés y compris les ObjectID mongoDB. C'est un choix pratique mais impactant: les messages sont binaires donc illisibles à l'oeil nu. L'envoi d'un message texte par la console Rabbit provoquera une erreur bson invalide.
+C'est un choix très pratique mais impactant: les messages sont binaires. Par exemple l'envoi d'un message texte par la console Rabbit provoquera l'erreur bson invalide.
 
-La de/serialisation BSON est faite en dur par la librairie, les utilisateurs peuvent donc directement envoyer et recevoir leurs objects JSON / BSON.
-
-Exemple d'utilisation: voir receiver.js et sender.js dans le dossier test.
+La de/serialisation BSON est faite par la librairie, les utilisateurs peuvent donc directement envoyer et recevoir leurs messages sous forme d'objet JSON / BSON.
 
 Types pris en charge par BSON: https://docs.mongodb.com/manual/reference/bson-types/
 
+Exemple de communication:
+
+#!/usr/bin/env node
+var messager = require("../src/index")
+var BSON = require("bson")
+
+var rabbit = {url: "amqp://localhost"}
+var exchange = {"key": "pingpong-exchange", "type": "direct", "options": {"durable": false}}
+var routingKey = "routingKey"
+var queue = {"name": "ping-pong-queue", "options": {"exclusive": false, "durable": false, "autoDelete": false}}
+
+messager.initRabbit(rabbit)
+    .then(function () {
+        return messager.createSender(exchange, routingKey)
+    })
+    .then(function (send) {
+        return messager.createReceiver(exchange, routingKey, queue, createResponder(send))
+            .then(function () {
+                return send
+            })
+    })
+    .then(function (send) {
+        send({objectId: BSON.ObjectID(), string: "Ping!", date: new Date()})
+    })
+
+var createResponder = function (send) {
+    return function (msg) {
+        console.log("Received:", msg)
+        send({objectId: BSON.ObjectID(), string: "Pong!", respondTo: msg})
+    }
+}
