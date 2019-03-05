@@ -12,6 +12,7 @@ Note it's an impacting choice: messages are binary, you can only see them with a
 BSON types: https://docs.mongodb.com/manual/reference/bson-types/
 
 Example:
+*The example creates a sender and a receiver, and send ping messages to itself.*
 
 ```javascript
 #!/usr/bin/env node
