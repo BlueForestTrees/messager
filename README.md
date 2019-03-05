@@ -1,17 +1,17 @@
 # Messager (simple-rbmq)
 
-Messager ou simple-rbmq est une mini-librairie permettant de communiquer via amqp (rabbitMq) en utilisant une serialisation BSON.
+Messager or simple-rbmq is a JS lib that allow communication via amqp (rabbitMq) using BSON serialization.
 
-Cela permet d'envoyer des objets JSON/BSON en conservant les types (ObjectId, Date, etc.)
+Like that you can send BSON conserving its dataypes (ObjectId, Date, etc.)
+BSON De/serialization is done internally (with bson 1.1.0 and bson 4 soon), users can directly send and receive their BSON/JSON messages.
 
-C'est un choix très pratique mais impactant: les messages sont binaires. Par exemple l'envoi d'un message texte par la console Rabbit provoquera l'erreur bson invalide.
+Note it's an impacting choice: messages are binary, you can only see them with a BSON deserialization (provided by this lib). For example sending a message with Rabbit console will throw an invalid BSOB error.
 
-La de/serialisation BSON est faite par la librairie, les utilisateurs peuvent donc directement envoyer et recevoir leurs messages sous forme d'objet JSON / BSON.
+BSON types: https://docs.mongodb.com/manual/reference/bson-types/
 
-Types pris en charge par BSON: https://docs.mongodb.com/manual/reference/bson-types/
+Example:
 
-Exemple de communication:
-
+```javascript
 #!/usr/bin/env node
 var messager = require("../src/index")
 var BSON = require("bson")
@@ -21,23 +21,27 @@ var exchange = {"key": "pingpong-exchange", "type": "direct", "options": {"durab
 var routingKey = "routingKey"
 var queue = {"name": "ping-pong-queue", "options": {"exclusive": false, "durable": false, "autoDelete": false}}
 
-messager.initRabbit(rabbit)
+messager.initRabbit(rabbit)//connect to rabbit
     .then(function () {
+        //createSender: assert exchange + create send to routingkey function
         return messager.createSender(exchange, routingKey)
     })
     .then(function (send) {
+        //create receiver: assert exchange + assert queue + bind queue + handle received messages
         return messager.createReceiver(exchange, routingKey, queue, createResponder(send))
-            .then(function () {
+            .then(function () { //return send for first send
                 return send
             })
     })
-    .then(function (send) {
+    .then(function (send) {//first send to initiate "ping pong pong pong..." example/
         send({objectId: BSON.ObjectID(), string: "Ping!", date: new Date()})
     })
 
+//createReceiver will take function(msg) returned here as message handler
 var createResponder = function (send) {
     return function (msg) {
         console.log("Received:", msg)
         send({objectId: BSON.ObjectID(), string: "Pong!", respondTo: msg})
     }
 }
+```
