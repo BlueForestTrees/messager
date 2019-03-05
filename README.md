@@ -2,6 +2,8 @@
 
 Messager or simple-rbmq is a JS lib that allow communication via amqp (rabbitMq) using BSON serialization.
 
+https://www.npmjs.com/package/simple-rbmq
+
 Like that you can send BSON conserving its dataypes (ObjectId, Date, etc.)
 BSON De/serialization is done internally (with bson 1.1.0 and bson 4 soon), users can directly send and receive their BSON/JSON messages.
 
