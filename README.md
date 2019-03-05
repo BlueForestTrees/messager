@@ -19,12 +19,14 @@ Example:
 var messager = require("../src/index")
 var BSON = require("bson")
 
+//routing config
 var rabbit = {url: "amqp://localhost"}
 var exchange = {"key": "pingpong-exchange", "type": "direct", "options": {"durable": false}}
 var routingKey = "routingKey"
 var queue = {"name": "ping-pong-queue", "options": {"exclusive": false, "durable": false, "autoDelete": false}}
 
-messager.initRabbit(rabbit)//connect to rabbit
+//initRabbit: connection + channel
+messager.initRabbit(rabbit)
     .then(function () {
         //createSender: assert exchange + create send to routingkey function
         return messager.createSender(exchange, routingKey)
