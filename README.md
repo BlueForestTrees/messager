@@ -27,18 +27,23 @@ var queue = {"name": "ping-pong-queue", "options": {"exclusive": false, "durable
 
 //initRabbit: connection + channel
 messager.initRabbit(rabbit)
+    
+    //createSender: assert exchange + create send to routingkey function
     .then(function () {
-        //createSender: assert exchange + create send to routingkey function
         return messager.createSender(exchange, routingKey)
     })
+    
+    //createReceiver: assert exchange + assert queue + bind queue + handle received messages
     .then(function (send) {
-        //create receiver: assert exchange + assert queue + bind queue + handle received messages
         return messager.createReceiver(exchange, routingKey, queue, createResponder(send))
-            .then(function () { //return send for first send
+            //return send for first send
+            .then(function () {
                 return send
             })
     })
-    .then(function (send) {//first send to initiate "ping pong pong pong..." example/
+    
+    //first send to initiate "ping pong pong pong..." example/
+    .then(function (send) {
         send({objectId: BSON.ObjectID(), string: "Ping!", date: new Date()})
     })
 
