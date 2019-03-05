@@ -39,7 +39,7 @@ messager.initRabbit(rabbit)
             .then(function () { return send })
     })
     
-    //first send to initiate "ping pong pong pong..." example/
+    //first send to initiate "ping pong"
     .then(function (send) {
         send({objectId: BSON.ObjectID(), string: "Ping!", date: new Date()})
     })
