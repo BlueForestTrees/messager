@@ -28,7 +28,7 @@ var queue = {"name": "ping-pong-queue", "options": {"exclusive": false, "durable
 //initRabbit: connection + channel
 messager.initRabbit(rabbit)
     
-    //createSender: assert exchange + create send to routingkey function
+    //createSender: assert exchange + create send function
     .then(function () {
         return messager.createSender(exchange, routingKey)
     })
@@ -36,10 +36,7 @@ messager.initRabbit(rabbit)
     //createReceiver: assert exchange + assert queue + bind queue + handle received messages
     .then(function (send) {
         return messager.createReceiver(exchange, routingKey, queue, createResponder(send))
-            //return send for first send
-            .then(function () {
-                return send
-            })
+            .then(function () { return send })
     })
     
     //first send to initiate "ping pong pong pong..." example/
