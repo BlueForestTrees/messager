@@ -4,7 +4,6 @@ var closer = require("node-closer")
 var rabbit = require("../src/index")
 
 var BSON = require("bson")
-var bson = new BSON()
 
 closer(function () {
     console.log("graceful shutdown")

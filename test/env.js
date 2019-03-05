@@ -16,9 +16,10 @@ var ENV = {
     DB_PWD: process.env.DB_PWD || "masta",
 }
 
-ENV.VERSION = "1.0.0";
+ENV.RB = JSON.parse(fs.readFileSync(ENV.RB_PATH, 'utf8'))
+ENV.QUEUE = JSON.parse(fs.readFileSync(ENV.QUEUE_PATH, 'utf8'))
 
-debug({ENV});
+const debug = require('debug')(`api:messager`)
 
 if (debug.enabled) {
     debug({ENV: ENV})
