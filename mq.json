@@ -1,5 +1,5 @@
 {
-  "url": "amqp://localhost",
+  "urls": ["toto", "doudou", "titi"],
   "exchange": {
     "key": "BF-EXCHANGE",
     "type": "direct",

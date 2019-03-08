@@ -1,18 +1,31 @@
 var rbmq = require('amqplib')
 var debug = require('debug')('api:messager')
-var _channel //channel handle
+
+var _channel
 
 var BSON = require("bson")
 var bson = new BSON()
 
+var i = Math.round(Math.random() * 100)
+
+var wait = function (timeInMs) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, timeInMs)
+    })
+}
 
 var connect = function (conf) {
-    debug("connecting to %s", conf.url)
-    return rbmq.connect(conf.url)
-        .catch(function (e) {
-            console.warn("connection problem. Retry in 1s")
-            return connect(conf)
-        })
+    const tryConnect = function () {
+        const url = conf.urls && Array.isArray(conf.urls) && conf.urls.length && conf.urls[i % conf.urls.length] || conf.url
+        debug("connecting to %s", url)
+        return rbmq.connect(url)
+            .catch(function (e) {
+                i++
+                console.warn(e.message)
+                return wait(conf.reconnectDelay || 1000).then(tryConnect)
+            })
+    }
+    return tryConnect()
 }
 
 var channel = function (c) {

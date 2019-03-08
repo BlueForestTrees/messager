@@ -25,9 +25,13 @@ function sendMsgs(send) {
             number: i,
             string: `Hello #${i}`
         }
-        send(msg)
 
-        console.log("sent:",msg)
+        try {
+            send(msg)
+            console.log("sent:", msg)
+        } catch (e) {
+            console.log("not sent:", msg)
+        }
 
         i++
     }
