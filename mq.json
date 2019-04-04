@@ -6,5 +6,8 @@
     "options": {
       "durable": true
     }
+  },
+  "channel": {
+    "prefetch": 10
   }
 }

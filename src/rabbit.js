@@ -28,9 +28,15 @@ var connect = function (conf) {
     return tryConnect()
 }
 
-var channel = function (c) {
-    debug("connection ok. creating channel")
-    return _channel = c.createChannel()
+var channel = function (rb) {
+    return function (c) {
+        debug("connection ok. creating channel")
+        _channel = c.createChannel()
+        rb.channel && rb.channel.prefetch && _channel.then(function(ch){
+            ch.prefetch(rb.channel.prefetch)
+        })
+        return _channel
+    }
 }
 
 var exchange = function (exConf) {
@@ -103,7 +109,7 @@ var receiver = function (work, routingKey, qConf) {
 }
 
 var initRabbit = function (rb) {
-    return connect(rb).then(channel)
+    return connect(rb).then(channel(rb))
 }
 
 var createSender = function (exConf, routingKey) {
