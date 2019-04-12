@@ -28,12 +28,6 @@ var createSender = function (exConf, routingKey) {
 }
 
 var createReceiver = function (exConf, routingKey, qConf, work) {
-
-    chWr.waitForConnect()
-        .then(function() {
-            console.log("Listening for messages");
-        });
-
     return chWr.addSetup(function (ch) {
         return Promise.all([
             ch.assertQueue(qConf.name, qConf.options),
