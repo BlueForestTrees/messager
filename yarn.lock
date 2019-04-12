@@ -6,6 +6,13 @@ abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
 
+amqp-connection-manager@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/amqp-connection-manager/-/amqp-connection-manager-2.3.1.tgz#6d2e1f167fb60184e157f4c686c4fdb86eb578e6"
+  integrity sha512-5uld2vHfUZWfTjYhCsmWhrpNsESUxfq0K1RllUUavngULgwxLZcsm0PjhhwqNwEXRhkK1uDMS/rzjUGCZBVYaA==
+  dependencies:
+    promise-breaker "^4.1.2"
+
 amqplib@0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.5.2.tgz#d2d7313c7ffaa4d10bcf1e6252de4591b6cc7b63"
@@ -374,6 +381,13 @@ debug@3.1.0:
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.1.0.tgz#5bb5a0672628b64149566ba16819e61518c67261"
   dependencies:
     ms "2.0.0"
+
+debug@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
+  integrity sha512-pYAIzeRo8J6KPEaJ0VWOh5Pzkbw/RetuzehGM7QRRX5he4fPHx2rdKMB256ehJCkX+XRQm16eZLqLNS8RSZXZw==
+  dependencies:
+    ms "^2.1.1"
 
 debug@^2.1.2, debug@^2.2.0, debug@^2.3.3:
   version "2.6.9"
@@ -1286,6 +1300,11 @@ prepend-http@^1.0.1:
 process-nextick-args@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.0.tgz#a37d732f4271b4ab1ad070d35508e8290788ffaa"
+
+promise-breaker@^4.1.2:
+  version "4.1.13"
+  resolved "https://registry.yarnpkg.com/promise-breaker/-/promise-breaker-4.1.13.tgz#fe57ad0a1f14912682942391de1e6a2b4e2e447b"
+  integrity sha512-+lGBqmBEgyvKweIrK4smdN1YxdYp5YjSL1us2XhTMBbZf98jdeGys/Edt5S1b1NXMVRQrvh4DrMgGpYPbXZf3g==
 
 pseudomap@^1.0.2:
   version "1.0.2"

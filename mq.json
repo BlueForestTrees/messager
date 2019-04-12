@@ -1,7 +1,7 @@
 {
-  "urls": ["toto", "doudou", "titi"],
+  "urls": ["amqp://localhost"],
   "exchange": {
-    "key": "BF-EXCHANGE",
+    "key": "messager-test-ex",
     "type": "direct",
     "options": {
       "durable": true

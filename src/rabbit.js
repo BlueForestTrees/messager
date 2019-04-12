@@ -1,128 +1,75 @@
-var rbmq = require('amqplib')
-var debug = require('debug')('api:messager')
-
-var _channel
-
+var rbmq = require('amqp-connection-manager')
+var warn = require('debug')('api:warn:messager')
 var BSON = require("bson")
 var bson = new BSON()
-
-var i = Math.round(Math.random() * 100)
-
-var wait = function (timeInMs) {
-    return new Promise(function (resolve) {
-        setTimeout(resolve, timeInMs)
-    })
-}
-
-var connect = function (conf) {
-    const tryConnect = function () {
-        const url = conf.urls && Array.isArray(conf.urls) && conf.urls.length && conf.urls[i % conf.urls.length] || conf.url
-        debug("connecting to %s", url)
-        return rbmq.connect(url)
-            .catch(function (e) {
-                i++
-                console.warn(e.message)
-                return wait(conf.reconnectDelay || 1000).then(tryConnect)
-            })
-    }
-    return tryConnect()
-}
-
-var channel = function (rb) {
-    return function (c) {
-        debug("connection ok. creating channel")
-        _channel = c.createChannel()
-        rb.channel && rb.channel.prefetch && _channel.then(function(ch){
-            ch.prefetch(rb.channel.prefetch)
-        })
-        return _channel
-    }
-}
-
-var exchange = function (exConf) {
-    return function (ch) {
-        debug("asserting exchange %s", exConf.key)
-        return ch.assertExchange(exConf.key, exConf.type, exConf.options)
-            .then(function () {
-                return ch
-            })
-    }
-}
-
-var queue = function (exConf, routingKey, qConf) {
-    return function (ch) {
-        debug("asserting queue %s from routingKey %s", qConf.name, routingKey)
-        return ch.assertQueue(qConf.name, qConf.options)
-            .then(function (q) {
-                ch.bindQueue(q.queue, exConf.key, routingKey)
-            })
-            .then(function () {
-                return ch
-            })
-    }
-}
-
-var sender = function (exConf, routingKey) {
-    return function (ch) {
-        debug("preparing a sender publishing on routingKey %s", routingKey)
-        return function (msg) {
-            ch.publish(exConf.key, routingKey, bson.serialize(msg))
-            return 1
-        }
-    }
-}
-
-var receiver = function (work, routingKey, qConf) {
-    return function (ch) {
-        debug("preparing a receiver on queue %s from routingKey %s", qConf.name, routingKey)
-        return ch.consume(
-            qConf.name,
-            function (msg) {
-                let json
-                try {
-                    json = bson.deserialize(msg.content)
-                } catch (e) {
-                    console.error(e.message, Buffer.from(msg.content).toString())
-                    ch.ack(msg)
-                    return
-                }
-                try {
-                    var result = work(json)
-                    if (result && result.then) {
-                        result
-                            .then(function () {
-                                ch.ack(msg)
-                            })
-                            .catch(function (e) {
-                                console.error("WORK exception", e)
-                            })
-                    } else {
-                        ch.ack(msg)
-                    }
-                } catch (e) {
-                    console.error("WORK exception", e)
-                }
-            },
-            {noAck: false}
-        )
-    }
-}
+var chWr
 
 var initRabbit = function (rb) {
-    return connect(rb).then(channel(rb))
+    const c = rbmq.connect(rb.urls || [rb.url])
+    c.on('connect', () => warn('Connected!'))
+    c.on('disconnect', params => warn('Disconnected.', params.err.message))
+
+    chWr = c.createChannel({
+        setup: function (ch) {
+            const setups = [
+                ch.assertExchange(rb.exchange.key, rb.exchange.type, rb.exchange.options)
+            ]
+            rb.channel && rb.channel.prefetch && setups.push(ch.prefetch(rb.channel.prefetch))
+            return Promise.all(setups)
+        }
+    })
+    return Promise.resolve()
 }
 
 var createSender = function (exConf, routingKey) {
-    return _channel
-        .then(exchange(exConf))
-        .then(sender(exConf, routingKey))
+    return function (msg) {
+        return chWr.publish(exConf.key, routingKey, bson.serialize(msg))
+    }
 }
 
 var createReceiver = function (exConf, routingKey, qConf, work) {
-    return _channel
-        .then(exchange(exConf))
-        .then(queue(exConf, routingKey, qConf))
-        .then(receiver(work, routingKey, qConf))
+
+    chWr.waitForConnect()
+        .then(function() {
+            console.log("Listening for messages");
+        });
+
+    return chWr.addSetup(function (ch) {
+        return Promise.all([
+            ch.assertQueue(qConf.name, qConf.options),
+            ch.bindQueue(qConf.name, exConf.key, routingKey),
+            ch.consume(qConf.name, onMessage(work), {noAck: false})
+        ])
+    })
+}
+
+var onMessage = function (work) {
+    return function (msg) {
+        let json
+        try {
+            json = bson.deserialize(msg.content)
+        } catch (e) {
+            console.error(e.message, Buffer.from(msg.content).toString())
+            chWr.ack(msg)
+            return
+        }
+        try {
+            var result = work(json)
+            if (result && result.then) {
+                result
+                    .then(function () {
+                        chWr.ack(msg)
+                    })
+                    .catch(function (e) {
+                        console.error("in receiver", e)
+                    })
+            } else {
+                chWr.ack(msg)
+            }
+        } catch (e) {
+            console.error("in receiver", e)
+        }
+    }
 }
 
 module.exports = {initRabbit, createSender, createReceiver}

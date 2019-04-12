@@ -1,12 +1,14 @@
 {
   "name": "simple-rbmq",
-  "version": "1.0.25",
+  "version": "2.0.0",
   "description": "Gère la communication rabbit mq.",
   "main": "src/index.js",
   "files": [
     "src"
   ],
   "scripts": {
+    "receiver": "cross-env NODE_ENV=test DEBUG=* test/receiver.js",
+    "sender": "cross-env NODE_ENV=test DEBUG=* test/sender.js",
     "test": "cross-env NODE_ENV=test mocha --recursive --require @babel/register --exit \"test/**.js\"",
     "prepublishOnly": "npm version patch",
     "npmpublish": "npm publish"
@@ -14,8 +16,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "amqplib": "0.5.2",
-    "bson": "1.1.0"
+    "amqp-connection-manager": "2.3.1",
+    "bson": "1.1.0",
+    "debug": "4.1.1"
   },
   "devDependencies": {
     "chai": "4.1.2",

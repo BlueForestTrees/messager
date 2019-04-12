@@ -28,9 +28,13 @@ function sendMsgs(send) {
 
         try {
             send(msg)
-            console.log("sent:", msg)
+                .then(function () {
+                    console.log("sent:", msg)
+                }).catch(function (e) {
+                console.log("not sent:", msg, e)
+            })
         } catch (e) {
-            console.log("not sent:", msg)
+            console.log("not sent catch:", msg, e)
         }
 
         i++

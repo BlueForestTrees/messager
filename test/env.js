@@ -22,7 +22,7 @@ ENV.QUEUE = JSON.parse(fs.readFileSync(ENV.QUEUE_PATH, 'utf8'))
 const debug = require('debug')(`api:messager`)
 
 if (debug.enabled) {
-    debug({ENV: ENV})
+    debug({ENV: JSON.stringify(ENV)})
 } else {
     console.log(JSON.stringify(ENV))
 }
