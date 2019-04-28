@@ -1,6 +1,6 @@
 {
   "name": "simple-rbmq",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Gère la communication rabbit mq.",
   "main": "src/index.js",
   "files": [
@@ -17,9 +17,9 @@
   "license": "ISC",
   "dependencies": {
     "amqp-connection-manager": "2.3.1",
+    "amqplib": "0.5.3",
     "bson": "1.1.0",
-    "debug": "4.1.1",
-    "amqplib": "0.5.3"
+    "debug": "4.1.1"
   },
   "devDependencies": {
     "chai": "4.1.2",
