@@ -37,32 +37,37 @@ var createReceiver = function (exConf, routingKey, qConf, work) {
     })
 }
 
+var getJson = function (msg) {
+    try {
+        return bson.deserialize(msg.content)
+    } catch (e) {
+        console.error(e.message, Buffer.from(msg.content).toString())
+        chWr.ack(msg)
+        return
+    }
+}
+var callWork = function (work, json) {
+    try {
+        var result = work(json)
+        if (result && result.then) {
+            result
+                .then(function () {
+                    chWr.ack(msg)
+                })
+                .catch(function (e) {
+                    console.error("in receiver", json, e)
+                })
+        } else {
+            chWr.ack(msg)
+        }
+    } catch (e) {
+        console.error("in receiver", json, e)
+    }
+}
 var onMessage = function (work) {
     return function (msg) {
-        let json
-        try {
-            json = bson.deserialize(msg.content)
-        } catch (e) {
-            console.error(e.message, Buffer.from(msg.content).toString())
-            chWr.ack(msg)
-            return
-        }
-        try {
-            var result = work(json)
-            if (result && result.then) {
-                result
-                    .then(function () {
-                        chWr.ack(msg)
-                    })
-                    .catch(function (e) {
-                        console.error("in receiver", e)
-                    })
-            } else {
-                chWr.ack(msg)
-            }
-        } catch (e) {
-            console.error("in receiver", e)
-        }
+        let json = getJson(msg)
+        json && callWork(work, json)
     }
 }
 
