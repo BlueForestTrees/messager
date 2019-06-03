@@ -1,10 +1,10 @@
-var rbmq = require('amqp-connection-manager')
-var warn = require('debug')('api:warn:messager')
-var BSON = require("bson")
-var bson = new BSON()
-var chWr
+let rbmq = require('amqp-connection-manager')
+let warn = require('debug')('api:warn:messager')
+let BSON = require("bson")
+let bson = new BSON()
+let chWr
 
-var initRabbit = function (rb) {
+let initRabbit = function (rb) {
     const c = rbmq.connect(rb.urls || [rb.url])
     c.on('connect', () => warn('Connected!'))
     c.on('disconnect', params => warn('Disconnected.', params.err.message))
@@ -21,14 +21,14 @@ var initRabbit = function (rb) {
     return Promise.resolve()
 }
 
-var createSender = function (exConf, routingKey) {
+let createSender = function (exConf, routingKey) {
     warn('createSender %o@%o', exConf.key, routingKey)
     return function (msg) {
         return chWr.publish(exConf.key, routingKey, bson.serialize(msg))
     }
 }
 
-var createReceiver = function (exConf, routingKey, qConf, work) {
+let createReceiver = function (exConf, routingKey, qConf, work) {
     warn('createReceiver %o@%o > %o', exConf.key, routingKey, qConf.name)
     return chWr.addSetup(function (ch) {
         return Promise.all([
@@ -39,18 +39,21 @@ var createReceiver = function (exConf, routingKey, qConf, work) {
     })
 }
 
-var getJson = function (msg) {
+let onMessage = work => msg => {
+    let json = toJson(msg)
+    json && handleMessage(work, msg, json)
+}
+let toJson = function (msg) {
     try {
         return bson.deserialize(msg.content)
     } catch (e) {
         console.error(e.message, Buffer.from(msg.content).toString())
         chWr.ack(msg)
-        return
     }
 }
-var callWork = function (work, json) {
+let handleMessage = function (work, msg, json){
     try {
-        var result = work(json)
+        let result = work(json)
         if (result && result.then) {
             result
                 .then(function () {
@@ -64,12 +67,6 @@ var callWork = function (work, json) {
         }
     } catch (e) {
         console.error("in receiver", json, e)
-    }
-}
-var onMessage = function (work) {
-    return function (msg) {
-        let json = getJson(msg)
-        json && callWork(work, json)
     }
 }
 
