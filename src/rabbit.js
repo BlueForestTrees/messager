@@ -22,12 +22,14 @@ var initRabbit = function (rb) {
 }
 
 var createSender = function (exConf, routingKey) {
+    warn('createSender %o@%o', exConf.key, routingKey)
     return function (msg) {
         return chWr.publish(exConf.key, routingKey, bson.serialize(msg))
     }
 }
 
 var createReceiver = function (exConf, routingKey, qConf, work) {
+    warn('createReceiver %o@%o > %o', exConf.key, routingKey, qConf.name)
     return chWr.addSetup(function (ch) {
         return Promise.all([
             ch.assertQueue(qConf.name, qConf.options),
